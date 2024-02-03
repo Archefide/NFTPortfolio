@@ -1,0 +1,25 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doggy Prices</title>
+</head>
+<body>
+    <h1>Doggy Prices</h1>
+
+    {% for dog in dog_data %}
+    <div style="border: 1px solid black; margin: 10px; padding: 10px;">
+        <h2>{{ dog['Name'] }}</h2>
+        <p>Rank: {{ dog['Rank'] }}</p>
+        <p>Price: {{ dog['Price'] }}</p>
+        <p>Volume: {{ dog['Volume'] }}</p>
+        <p>Trades: {{ dog['Trades'] }}</p>
+        <p>Supply: {{ dog['Supply'] }}</p>
+        <p>Owners: {{ dog['Owners'] }}</p>
+    </div>
+    {% endfor %}
+</body>
+</html>
