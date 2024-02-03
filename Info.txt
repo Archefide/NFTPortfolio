@@ -1,2 +1,6 @@
 Pierwszy krok
-instalacja bibliotek
+instalacja biblioteki
+
+Dodanie dashboarda podstawowego
+możliwość wywołania strony z cenami nft z doggymarket much wow
+test

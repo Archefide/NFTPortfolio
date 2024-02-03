@@ -17,7 +17,11 @@ def index():
 def render_button1():
     # Wywołaj funkcję scrape_doggy_data przy kliknięciu guzika 1
     doggy_data = scrape_doggy_data()
-    return render_template('button1.html', dog_data=doggy_data)
+
+    # Debugowanie - wydrukuj dane o psach
+    print("Dane o psach:", doggy_data)
+
+    return render_template('button1.html', data=doggy_data)
 
 # Nowa trasa i funkcja dla guzika 1
 

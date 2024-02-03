@@ -1,0 +1,15 @@
+/* style_button1.css */
+.data-box {
+    border: 1px solid #ddd;
+    margin: 10px;
+    padding: 10px;
+}
+
+.data-box h2 {
+    color: #0066cc;
+}
+
+.data-box p {
+    margin: 5px 0;
+    color: #666;
+}
