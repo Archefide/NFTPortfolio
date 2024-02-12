@@ -19,7 +19,7 @@ def render_button1():
     doggy_data = scrape_doggy_data()
 
     # Debugowanie - wydrukuj dane o psach
-    print("Dane o psach:", doggy_data)
+    #print("debug:", doggy_data)
 
     return render_template('button1.html', data=doggy_data)
 
