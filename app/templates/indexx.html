@@ -1,12 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Lista NFT</title>
 </head>
 <body>
-    {% for item in all_data %}
-    <p>{{ item }}</p>
-    {% endfor %}
+<!-- REmove ITEMS FORM -->
+<div id="remove_items">
+    <form action="/remove_items" method="POST">
+        {% for item in shopping_items%}
+        <input type="checkbox" name="check" id="{{item}}" value="{{item}}">
+        <label for="{{item}}" name="{{item}}">{{ item }}</label><br>
+        {% endfor %}
+        <input type="submit" value="REMOVE ITEMS">
+    </form>
+
+</div>
+
+    <!-- ADD ITEMS FORM -->
+<div id="add_item">
+    <form action="/add_items" method="POST">
+        <select name="select_items">
+        {% for item in all_items %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+        </select>
+        <input type="submit" value="ADD ITEM">
+    </form>
+</div>
 </body>
 </html>

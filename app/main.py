@@ -7,46 +7,35 @@ import random
 
 app = Flask(__name__)
 Bootstrap(app)  # Inicjalizacja Flask-Bootstrap
+app.secret_key = "321"
+app.config["SESSION_COKIE_NAME"] = "123"
 
 # Strona główna z różnymi ramkami
-@app.route('/')
+@app.route('/', methods=["POST","GET"])
 def index():
-    return render_template('index.html')
+    session["all_items"], session["shopping_items"] = get_db()
+    return render_template("indexx.html", all_items=session["all_items"],
+                           shopping_items=session["shopping_items"])
 
-# Endpoint do renderowania button1.html
-@app.route('/DoggyMarketCeny', methods=['GET'])
-def render_button1():
-    # Wywołaj funkcję scrape_doggy_data przy kliknięciu guzika 1
-    doggy_data = scrape_doggy_data()
+@app.route('/add_items', methods=["post"])
+def add_items():
+    session["shopping_items"].append(request.form["select_items"])
+    return render_template("indexx.html", all_items=session["all_items"],
+                           shopping_items=session["shopping_items"])
 
-    # Debugowanie - wydrukuj dane o psach
-    #print("debug:", doggy_data)
+@app.route('/remove_items', methods=["post"])
+def remove_items():
+    checked_boxes = request.form.getlist("check")
 
-    return render_template('button1.html', data=doggy_data)
+    for item in checked_boxes:
+        if item in session["shopping_items"]:
+            idx = session["shopping_items"].index(item)
+            session["shopping_items"].pop(idx)
+            session.modified = True
 
-@app.route('/get_data')
-def get_data():
-    # Connect to SQLite database
-    conn = sqlite3.connect(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
-    cursor = conn.cursor()
+    return render_template("indexx.html", all_items=session["all_items"],
+                           shopping_items=session["shopping_items"])
 
-    # Execute a query to fetch data (assuming you have a table named 'your_table')
-    cursor.execute('SELECT * FROM NFTs')
-    data = cursor.fetchall()
-
-    # Close the connection
-    conn.close()
-
-    # Convert data to a list of dictionaries
-    data_list = [{'Chain': row[0], 'name': row[1], 'email': row[2]} for row in data]
-
-    # Return data as JSON
-    return jsonify(data_list)
-
-@app.route('/po')
-def indexx():
-    data = get_db()
-    return render_template("indexx.html", all_data= data)
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -55,7 +44,14 @@ def get_db():
         cursor.execute("SELECT Collection_Name from NFTs")
         all_data = cursor.fetchall()
         all_data = [str(val[0]) for val in all_data]
-    return all_data
+        shopping_list = all_data.copy()
+        shopping_list = shopping_list[2:5]
+
+    return all_data, shopping_list
+
+
+
+
 
 @app.route('/t')
 def table_page():
