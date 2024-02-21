@@ -11,7 +11,7 @@ app.secret_key = "321"
 app.config["SESSION_COKIE_NAME"] = "123"
 
 # Strona główna z różnymi ramkami
-@app.route('/', methods=["POST","GET"])
+@app.route('/', methods=["POST", "GET"])
 def index():
     session["all_items"], session["shopping_items"] = get_db()
     return render_template("indexx.html", all_items=session["all_items"],
@@ -19,7 +19,11 @@ def index():
 
 @app.route('/add_items', methods=["post"])
 def add_items():
-    session["shopping_items"].append(request.form["select_items"])
+    selected_item = request.form["select_items"]
+
+    if selected_item not in session["shopping_items"]:
+        session["shopping_items"].append(selected_item)
+        session.modified = True
     return render_template("indexx.html", all_items=session["all_items"],
                            shopping_items=session["shopping_items"])
 
@@ -45,11 +49,9 @@ def get_db():
         all_data = cursor.fetchall()
         all_data = [str(val[0]) for val in all_data]
         shopping_list = all_data.copy()
-        shopping_list = shopping_list[2:5]
+        shopping_list.clear()
 
     return all_data, shopping_list
-
-
 
 
 

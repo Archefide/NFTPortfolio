@@ -3,30 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <title>Lista NFT</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            background-image: url('../static/images/background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .container {
+
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Stylizacja dla sekcji remove_items i add_item */
+        #remove_items,
+        #add_item {
+            margin: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin-left: 200px; /* Dodaj margines lewy o 200px */
+            margin-bottom: 400px; /* Dodaj margin-bottom o 50px */
+        }
+
+        /* Stylizacja dla checkboxów i labeli */
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        /* Dodanie odstępu między checkboxem a tekstem */
+        label {
+            margin-right: 15px;
+        }
+
+        /* Stylizacja dla przycisków */
+        input[type="submit"] {
+            padding: 10px;
+            background-color: #007bff; /* Kolor przycisku */
+            color: #fff; /* Kolor tekstu na przycisku */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Dodatkowe stylizacje dla wyboru itemów */
+        select {
+            padding: 8px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-<!-- REmove ITEMS FORM -->
-<div id="remove_items">
-    <form action="/remove_items" method="POST">
-        {% for item in shopping_items%}
-        <input type="checkbox" name="check" id="{{item}}" value="{{item}}">
-        <label for="{{item}}" name="{{item}}">{{ item }}</label><br>
-        {% endfor %}
-        <input type="submit" value="REMOVE ITEMS">
-    </form>
 
-</div>
+<div class="container">
+    <!-- Remove ITEMS FORM -->
+    <div id="remove_items" style="margin: 20px 200px 20px 20px;">
+        <form action="/remove_items" method="POST">
+            {% for item in shopping_items %}
+            <input type="checkbox" name="check" id="{{item}}" value="{{item}}">
+            <label for="{{item}}" name="{{item}}">{{ item }}</label><br>
+            {% endfor %}
+            <input type="submit" value="REMOVE ITEMS">
+        </form>
+    </div>
 
     <!-- ADD ITEMS FORM -->
-<div id="add_item">
-    <form action="/add_items" method="POST">
-        <select name="select_items">
-        {% for item in all_items %}
-        <option value="{{ item }}">{{ item }}</option>
-        {% endfor %}
-        </select>
-        <input type="submit" value="ADD ITEM">
-    </form>
+    <div id="add_item" style="margin: 20px 200px 20px 20px;">
+        <form action="/add_items" method="POST">
+            <select name="select_items">
+                {% for item in all_items %}
+                <option value="{{ item }}">{{ item }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="ADD ITEM">
+        </form>
+    </div>
 </div>
+
 </body>
 </html>
