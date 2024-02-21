@@ -1,7 +1,7 @@
 import sqlite3
 
 # Pełna ścieżka do pliku bazy danych
-sciezka_bazy_danych = 'Doggymarket_nft_database.db'
+sciezka_bazy_danych = r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db'
 
 # Utwórz połączenie z bazą danych
 conn = sqlite3.connect(sciezka_bazy_danych)

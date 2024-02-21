@@ -1,10 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite Table Page</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-$END$
+
+    <h1>SQLite Table Page</h1>
+
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Chain</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Kryptowaluta</th>
+                <th>Cena krypto</th>
+                <th>Ilość</th>
+                <th>Suma</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table rows will be dynamically populated from Flask -->
+        </tbody>
+    </table>
+
+    <script>
+    // JavaScript code to fetch data from Flask and populate the table
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/get_data') // Assuming you have a Flask route named 'get_data'
+            .then(response => response.json())
+            .then(data => populateTable(data));
+    });
+
+    function populateTable(data) {
+        var tableBody = document.querySelector('#data-table tbody');
+
+        data.forEach(row => {
+            var tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.id}</td><td>${row.name}</td><td>${row.email}</td>`;
+            tableBody.appendChild(tr);
+        });
+    }
+</script>
+
+
 </body>
 </html>

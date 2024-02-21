@@ -1,0 +1,20 @@
+Stworzyć uniwersalną bazę danych.
+
+zescrapować tradeport, opensea, drc20, magiceden?, okx, ordinalswallet
+
+Automatyczne wywoływanie wszystkich scrapperów.
+
+wizualizacja danych i analizy
+
+możliwość stworzenia koszyka portfolio
+
+design strony
+
+
+
+
+________________________________________
+inne pomysły:
+śledzenie walletów na drc!!
+node do mintowania!!!!!!
+bot do tradingu!

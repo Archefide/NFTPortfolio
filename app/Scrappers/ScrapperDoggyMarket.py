@@ -1,11 +1,12 @@
 import sqlite3
 from selenium import webdriver
 from bs4 import BeautifulSoup, Comment
+from selenium.webdriver.chrome.options import Options
 import time
 import os
 
 def utworz_baze_danych():
-    db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\nft_database.db')
+    db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -20,7 +21,8 @@ def utworz_baze_danych():
             trades INTEGER,
             supply INTEGER,
             owners INTEGER,
-            source TEXT
+            source TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
@@ -29,16 +31,18 @@ def utworz_baze_danych():
     conn.close()
 
 def zapisz_do_bazy_danych(dog_data):
-    db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\nft_database.db')
+    db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     for dog in dog_data:
         # Wstaw dane do tabeli NFTs
         cursor.execute('''
-            INSERT INTO NFTs (rank, collection_name, price, volume, trades, supply, owners, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (dog['Rank'], dog['Collection_Name'], dog['Price'], dog['Volume'], dog['Trades'], dog['Supply'], dog['Owners'], dog['Source']))
+            INSERT INTO NFTs (rank, collection_name, price, volume, trades, supply, owners, source, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+        dog['Rank'], dog['Collection_Name'], dog['Price'], dog['Volume'], dog['Trades'], dog['Supply'], dog['Owners'],
+        dog['Source'], dog['Timestamp']))
 
     # Zapisz zmiany i zamknij połączenie
     conn.commit()
@@ -47,14 +51,15 @@ def zapisz_do_bazy_danych(dog_data):
 def scrape_doggy_data():
     url = 'https://doggy.market/nfts'
 
-    options = webdriver.ChromeOptions()
+    options = Options()
     options.add_argument('--disable-gpu')
+    #options.add_argument('--headless')  # Dodaj headless mode
     driver = webdriver.Chrome(options=options)
 
     driver.get(url)
 
     # Poczekaj na załadowanie strony (możesz dostosować ten czas w zależności od potrzeb)
-    time.sleep(5)
+    time.sleep(1)
 
     # Pobranie źródła strony po załadowaniu JavaScript
     page_source = driver.page_source
@@ -88,6 +93,9 @@ def scrape_doggy_data():
         source_elem = block.find('td', class_='source')
         source = source_elem.text.strip() if source_elem else 'N/A'
 
+        # Dodaj timestamp do słownika dog_data
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
         dog_data.append({
             "Rank": rank,
             "Collection_Name": collection_name,
@@ -96,7 +104,8 @@ def scrape_doggy_data():
             "Trades": trades,
             "Supply": supply,
             "Owners": owners,
-            "Source": "DoggyMarket (drc20)"
+            "Source": "DoggyMarket (drc20).",
+            "Timestamp": timestamp
         })
 
     return dog_data

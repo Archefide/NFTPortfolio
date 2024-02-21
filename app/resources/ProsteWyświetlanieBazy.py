@@ -1,7 +1,7 @@
 import sqlite3
 
 def wyswietl_baze_danych():
-    db_path = 'nft_database.db'
+    db_path = r'Doggymarket_nft_database.db'
 
     try:
         conn = sqlite3.connect(db_path)
@@ -22,6 +22,7 @@ def wyswietl_baze_danych():
             print(f"Supply: {row[6]}")
             print(f"Owners: {row[7]}")
             print(f"Source: {row[8]}")
+            print(f"Timestamp:{row[9]}")
             print("------------------------------")
 
     except sqlite3.Error as e:
