@@ -1,9 +1,9 @@
+import os
 import sqlite3
 from selenium import webdriver
 from bs4 import BeautifulSoup, Comment
 from selenium.webdriver.chrome.options import Options
 import time
-import os
 
 def utworz_baze_danych():
     db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
@@ -22,7 +22,9 @@ def utworz_baze_danych():
             supply INTEGER,
             owners INTEGER,
             source TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            waluta TEXT,
+            status INTEGER DEFAULT 0  -- Zmieniono domyślną wartość statusu
         )
     ''')
 
@@ -36,13 +38,25 @@ def zapisz_do_bazy_danych(dog_data):
     cursor = conn.cursor()
 
     for dog in dog_data:
+        # Sprawdź, czy istnieje rekord o takim samym collection_name
+        cursor.execute('''
+            SELECT id FROM NFTs WHERE collection_name = ? AND status = 1 ORDER BY timestamp DESC LIMIT 1
+        ''', (dog['Collection_Name'],))
+        existing_record = cursor.fetchone()
+
+        if existing_record:
+            # Jeśli istnieje, ustaw status ostatniego rekordu na 0
+            cursor.execute('''
+                UPDATE NFTs SET status = 0 WHERE id = ?
+            ''', (existing_record[0],))
+
         # Wstaw dane do tabeli NFTs
         cursor.execute('''
-            INSERT INTO NFTs (rank, collection_name, price, volume, trades, supply, owners, source, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO NFTs (rank, collection_name, price, volume, trades, supply, owners, source, timestamp, waluta, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         ''', (
         dog['Rank'], dog['Collection_Name'], dog['Price'], dog['Volume'], dog['Trades'], dog['Supply'], dog['Owners'],
-        dog['Source'], dog['Timestamp']))
+        dog['Source'], dog['Timestamp'], 'DOGE'))
 
     # Zapisz zmiany i zamknij połączenie
     conn.commit()
@@ -53,7 +67,7 @@ def scrape_doggy_data():
 
     options = Options()
     options.add_argument('--disable-gpu')
-    #options.add_argument('--headless')  # Dodaj headless mode
+    # options.add_argument('--headless')  # Dodaj headless mode
     driver = webdriver.Chrome(options=options)
 
     driver.get(url)

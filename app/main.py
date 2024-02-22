@@ -1,9 +1,8 @@
 # app/main.py
 from flask import Flask, render_template, jsonify, session, g, request
-from Scrappers.ScrapperDoggyMarket import scrape_doggy_data
 from flask_bootstrap import Bootstrap  # Importuj Flask-Bootstrap
 import sqlite3
-import random
+
 
 app = Flask(__name__)
 Bootstrap(app)  # Inicjalizacja Flask-Bootstrap
@@ -14,65 +13,69 @@ app.config["SESSION_COKIE_NAME"] = "123"
 @app.route('/', methods=["POST", "GET"])
 def index():
     session["all_items"], session["shopping_items"] = get_db()
+    print(session["all_items"])
     return render_template("indexx.html", all_items=session["all_items"],
                            shopping_items=session["shopping_items"])
 
-@app.route('/add_items', methods=["post"])
+def is_nft_added(name):
+    return any(item[0] == name for item in session["shopping_items"])
+
+
+@app.route('/add_items', methods=["POST"])
 def add_items():
-    selected_item = request.form["select_items"]
+    selected_item = request.form['selected_items']
+    quantity = int(request.form['quantity'])
+    item_name, item_price, waluta = selected_item.split('|')
 
-    if selected_item not in session["shopping_items"]:
-        session["shopping_items"].append(selected_item)
+    # Usuń przecinki z wartości item_price
+    item_price = item_price.replace(',', '')
+
+    # Oblicz wartość dla nowego przedmiotu
+    total_value = int(quantity) * float(item_price)
+
+    # Sprawdź, czy przedmiot już istnieje na liście przedmiotów
+    if not is_nft_added(item_name):
+        session["shopping_items"].append([item_name, item_price, waluta, quantity, total_value])
         session.modified = True
-    return render_template("indexx.html", all_items=session["all_items"],
-                           shopping_items=session["shopping_items"])
 
-@app.route('/remove_items', methods=["post"])
-def remove_items():
+    return render_template("indexx.html", all_items=session["all_items"], shopping_items=session["shopping_items"])
+
+
+# Dodaj tę funkcję do pliku main.py
+def total_value_sum():
+    return sum(item[4] for item in session["shopping_items"])
+
+# Użyj dekoratora @app.context_processor
+@app.context_processor
+def inject_functions():
+    return dict(total_value_sum=total_value_sum)
+
+# Aktualizacja metody portfolio
+@app.route('/portfolio', methods=["POST"])
+def portfolio():
     checked_boxes = request.form.getlist("check")
+    print(f"Checked boxes: {checked_boxes}")
 
-    for item in checked_boxes:
-        if item in session["shopping_items"]:
-            idx = session["shopping_items"].index(item)
-            session["shopping_items"].pop(idx)
-            session.modified = True
+    # Utwórz nową listę zakupów, pomijając zaznaczone przedmioty
+    session["shopping_items"] = [item for item in session["shopping_items"] if item[0] not in checked_boxes]
+    session.modified = True
+    print(f"Updated shopping items: {session['shopping_items']}")
 
-    return render_template("indexx.html", all_items=session["all_items"],
-                           shopping_items=session["shopping_items"])
+    return render_template("indexx.html", all_items=session["all_items"], shopping_items=session["shopping_items"])
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect('resources/Doggymarket_nft_database.db')
         cursor = db.cursor()
-        cursor.execute("SELECT Collection_Name from NFTs")
+        cursor.execute("SELECT Collection_Name, Price, waluta from NFTs WHERE status = 1")
         all_data = cursor.fetchall()
-        all_data = [str(val[0]) for val in all_data]
+        all_data = [(str(val[0]), val[1], str(val[2])) for val in all_data]
         shopping_list = all_data.copy()
         shopping_list.clear()
 
+
     return all_data, shopping_list
-
-
-
-@app.route('/t')
-def table_page():
-    # Connect to SQLite database
-    conn = sqlite3.connect(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
-    cursor = conn.cursor()
-
-    # Execute a query to fetch data (assuming you have a table named 'your_table')
-    cursor.execute('SELECT * FROM NFTs')
-    data = cursor.fetchall()
-
-    # Close the connection
-    conn.close()
-
-    # Render the HTML page with data
-    return render_template('table_page.html', data=data)
-
-# Nowa trasa i funkcja dla guzika 1
-
 
 if __name__ == '__main__':
     app.run(debug=True)
