@@ -1,9 +1,35 @@
-import os
+import os, sys
 import sqlite3
+import time
+import requests
 from selenium import webdriver
 from bs4 import BeautifulSoup, Comment
 from selenium.webdriver.chrome.options import Options
-import time
+sys.path.append(r'C:\Users\kryst\OneDrive\Dokumenty\Projekty Pycharm\XYZ\XXX')
+from binance_keys import API_KEY, SECRET_KEY
+
+dogecoin_price = None  # Cena Dogecoin, domyślnie None
+
+def pobierz_dane_doge_binance():
+    global dogecoin_price
+    if dogecoin_price is None:
+        base_url = "https://api.binance.com/api/v3/ticker/price"
+        symbol = "DOGEUSDT"
+
+        params = {"symbol": symbol}
+
+        try:
+            response = requests.get(base_url, params=params, headers={"X-MBX-APIKEY": API_KEY})
+            response.raise_for_status()
+            dane = response.json()
+            cena_dogecoin = float(dane["price"])
+            dogecoin_price = cena_dogecoin
+            print(f'Aktualna cena Dogecoin na Binance: {cena_dogecoin} USD')
+        except requests.exceptions.RequestException as e:
+            print(f'Błąd podczas pobierania danych: {e}')
+
+    return dogecoin_price
+
 
 def utworz_baze_danych():
     db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
@@ -17,6 +43,7 @@ def utworz_baze_danych():
             rank INTEGER,
             collection_name TEXT NOT NULL,
             price REAL,
+            price_doge REAL,  -- Nowa kolumna dla ceny Dogecoin
             volume INTEGER,
             trades INTEGER,
             supply INTEGER,
@@ -24,7 +51,7 @@ def utworz_baze_danych():
             source TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             waluta TEXT,
-            status INTEGER DEFAULT 0  -- Zmieniono domyślną wartość statusu
+            status INTEGER DEFAULT 0
         )
     ''')
 
@@ -32,10 +59,14 @@ def utworz_baze_danych():
     conn.commit()
     conn.close()
 
+
 def zapisz_do_bazy_danych(dog_data):
     db_path = os.path.join(r'C:\Users\kryst\OneDrive\Pulpit\2024\app\resources\Doggymarket_nft_database.db')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
+    # Pobierz aktualną cenę Dogecoin
+    cena_dogecoin = pobierz_dane_doge_binance()
 
     for dog in dog_data:
         # Sprawdź, czy istnieje rekord o takim samym collection_name
@@ -50,17 +81,19 @@ def zapisz_do_bazy_danych(dog_data):
                 UPDATE NFTs SET status = 0 WHERE id = ?
             ''', (existing_record[0],))
 
-        # Wstaw dane do tabeli NFTs
+        # Wstaw dane do tabeli NFTs, używając ceny Dogecoin
         cursor.execute('''
-            INSERT INTO NFTs (rank, collection_name, price, volume, trades, supply, owners, source, timestamp, waluta, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            INSERT INTO NFTs (rank, collection_name, price, price_doge, volume, trades, supply, owners, source, timestamp, waluta, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         ''', (
-        dog['Rank'], dog['Collection_Name'], dog['Price'], dog['Volume'], dog['Trades'], dog['Supply'], dog['Owners'],
-        dog['Source'], dog['Timestamp'], 'DOGE'))
+        dog['Rank'], dog['Collection_Name'], dog['Price'], cena_dogecoin, dog['Volume'], dog['Trades'], dog['Supply'],
+        dog['Owners'], dog['Source'], dog['Timestamp'], 'DOGE'))
 
     # Zapisz zmiany i zamknij połączenie
     conn.commit()
     conn.close()
+
+
 
 def scrape_doggy_data():
     url = 'https://doggy.market/nfts'

@@ -24,6 +24,15 @@
             box-sizing: border-box;
         }
 
+        .dogecoin-container {
+            position: fixed;
+            top: 10px; /* dostosuj wartość top, aby umieścić div w odpowiednim miejscu */
+            left: 10px; /* dostosuj wartość right, aby umieścić div w odpowiednim miejscu */
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
         /* Stylizacja dla sekcji remove_items i add_item */
         #portfolio,
         test,
@@ -62,13 +71,21 @@
     </style>
 </head>
 <body>
-
+<!-- DIV Z CENA DOGE -->
+    <div class="dogecoin-container">
+        <h2>Aktualna cena Dogecoin na Binance</h2>
+        {% if cena_dogecoin is defined %}
+            <p>Cena: {{ cena_dogecoin }} USD</p>
+        {% else %}
+            <p>Brak dostępnych danych o cenie Dogecoin.</p>
+        {% endif %}
+    </div>
         <!-- ADD ITEM FORM -->
     <div id="add_item">
         <form action="/add_items" method="POST">
             <select name="selected_items">
-                {% for item, price, waluta in all_items %}
-                    <option value="{{ item }}|{{ price }}|{{ waluta }}">{{ item }}</option>
+                {% for item, price, waluta, price_doge in all_items %}
+                    <option value="{{ item }}|{{ price }}|{{ waluta }}|{{ price_doge }}">{{ item }}</option>
                 {% endfor %}
             </select>
             <input type="number" name="quantity" value="1" min="1"> <!-- Nowy input dla liczby sztuk -->
@@ -76,24 +93,33 @@
         </form>
     </div>
 
-    <div id="portfolio">
-        <h2>Portfolio</h2>
-        <form method="post" action="/portfolio">
-            {% for item, price, waluta, quantity, total_value in shopping_items %}
-                <label>
-                    <input type="checkbox" name="check" value="{{ item }}"> {{ item }} - {{ price }}  {{ waluta }} - {{ quantity }} szt.
-                    - Total: {{ total_value }} {{ waluta }}
-                </label><br>
-            {% endfor %}
-            <input type="submit" value="REMOVE ITEM">
-        </form>
+    <!-- PORTFOLIO FORM -->
+        <div id="portfolio">
+            <h2>Portfolio</h2>
 
-        <div>
-            <h3>Total Value</h3>
-            <p>{{ total_value_sum() }} {{ waluta }}</p>
+            <form method="post" action="/portfolio">
+                {% for item, price, waluta, price_doge, quantity, total_value, total_value_portfolio in shopping_items %}
+                    {% set total_price_doge = price_doge * price %}
+                    {% set total_value_doge = total_value * price_doge %}
+                    <label>
+                        <input type="checkbox" name="check" value="{{ item }}"> {{ item }} -
+                        {% if price|int == price %}{{ price|int }}{% else %}{{ '%.2f'|format(price) }}{% endif %}  {{ waluta }} -
+                        {% if total_price_doge|int == total_price_doge %}{{ total_price_doge|int }}{% else %}{{ '%.2f'|format(total_price_doge) }}{% endif %} $ -
+                        {{ quantity }} szt. - Total:
+                        {% if total_value|int == total_value %}{{ total_value|int }}{% else %}{{ '%.2f'|format(total_value) }}{% endif %} {{ waluta }} -
+                        {% if total_value_doge|int == total_value_doge %}{{ total_value_doge|int }}{% else %}{{ '%.2f'|format(total_value_doge) }}{% endif %} $
+                    </label><br>
+
+                {% endfor %}
+
+                <input type="submit" value="REMOVE ITEM">
+            </form>
+
+            <div class="total-portfolio-value">
+                Total Portfolio Value:
+                {% if total_portfolio_value|int == total_portfolio_value %}{{ total_portfolio_value|int }}{% else %}{{ '%.2f'|format(total_portfolio_value) }}{% endif %} $
+            </div>
         </div>
-    </div>
-
 
 </div>
 </body>
